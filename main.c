@@ -1,7 +1,7 @@
 /*
- * Joule Juggler V1: main.c
+ * Joule Juggler V2: main.c
  *
- *  Latest Revision on: Feb 16, 2025
+ *  Latest Revision on: Mar 9, 2025
  *              Author: Yolie Reyes
  */
 
@@ -11,14 +11,13 @@
 #include "PLL.h"
 #include "SysTick.h"
 
-
-
 // The Layout of Ports on the Tiva TM4C123G
 //             b31 ... b6 || b5  b4  b3  b2  b1  b0
 //              RESERVED  || F   E   D   C   B   A
 //                  0x...    20  10  08  04  02  01
-//                           Charging        LCD
-//                                   Discharging
+//                               ADCs
+//                                       Cycling
+//                                           LCD
 
 // The Layout of Pins for a GPIO Port  -----------
 //         b7  b6  b5  b4 ||  b3  b2  b1  b0     |
@@ -26,12 +25,14 @@
 //                   0000 || 0000                |
 //                        ||                     |
 //                        ||                     |
-// Control:               ||                     |
+// Control:               ||ADC0  ADC1 ADC0      |
+//                        ||AIN0  AIN1 AIN2      |
+//  ADCs                  ||Volt  Amp  Temp      |
+//  Cycling        -   +  ||                     |
+//  LCD    D7  D6  D5  D4 ||       En  R/W  RS   |
 //                        ||                     |
 //                        ||                     |
-//  LCD    D7  D6  D5  D4 ||                     |
-//                        ||       En  R/W  RS   |
-//                        ||                     |
+
 
 /**
  * main.c
@@ -52,4 +53,3 @@ int main(void)
 
     Timer0A_Init();             // LEDoff should be called at some point... 1 second if my math is correct
 }
-

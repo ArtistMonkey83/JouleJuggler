@@ -1,7 +1,7 @@
 /*
- * Joule Juggler V1: Joule_Driver.h
+ * Joule Juggler V2: Joule_Driver.h
  *
- *  Latest Revision on: Feb 16, 2025
+ *  Latest Revision on: Mar 9, 2025
  *      Author: Yolie Reyes
  */
 
@@ -11,26 +11,28 @@
 #ifndef JOULE_DRIVER_H_
 #define JOULE_DRIVER_H_
 
-
 // The Layout of Ports on the Tiva TM4C123G
 //             b31 ... b6 || b5  b4  b3  b2  b1  b0
 //              RESERVED  || F   E   D   C   B   A
 //                  0x...    20  10  08  04  02  01
-//                           Charging        LCD
-//                                   Discharging
+//                               ADCs
+//                                       Cycling
+//                                           LCD
 
 // The Layout of Pins for a GPIO Port  -----------
 //         b7  b6  b5  b4 ||  b3  b2  b1  b0     |
 // Pin      7   6   5   4 ||   3   2   1   0     |
 //                   0000 || 0000                |
-//                                               |
-//                                               |
-// Control:               ||                     |
 //                        ||                     |
 //                        ||                     |
-//  LCD    D7  D6  D5  D4 ||                     |
-//                        ||       En  R/W  RS   |
+// Control:               ||ADC0  ADC1 ADC0      |
+//                        ||AIN0  AIN1 AIN2      |
+//  ADCs                  ||Volt  Amp  Temp      |
+//  Cycling        -   +  ||                     |
+//  LCD    D7  D6  D5  D4 ||       En  R/W  RS   |
 //                        ||                     |
+//                        ||                     |
+
 
 // The layout of the 16x2 LCD addresses
 //
@@ -53,22 +55,19 @@
 /*
  * ADC Values and Functions
  */
+#define Draining 32 // 0x20, PC5
+#define Gaining 16  // 0x10, PC4
 
+double I_batt;      // Variable for R_senseC
+double V_batt;      // Variable for R_vref
+double Batt_temp;   // Variable for thermistor
+int shutdown;       // Flag in case of an emergency shut it down!
 
-/*
- * Charging Control Values and Functions
- */
-int toggle;           // Toggle is initialized to 3 for system setup purposes, 0 = "gain" 1 = "drain"
-void charging_Init(void); // Trigger Interrupt Control
-void GPIOF_Handler();     // Handler for the charging interrupts coming in on Port F pin 4 and 0
-
-
-
-/*
- * Discharging Control Values and Functions
- *
- */
-
+void ADC_Init(void);// Initialization of ADC0: AIN0, AIN2 ADC1: AIN1
+void current();     // Take a reading of the R_senseC resistor
+void temperature(); // Take a reading of the thermistor
+void voltage();     // Take a reading of the R_vref resistor
+double ADC_Conversion(double analogValue);      // Conversion for outputting user friendly units
 
 /*
  * Joule Juggler LCD Control Values Functions

@@ -1,7 +1,7 @@
 /*
- * Joule Juggler V1: Joule_Driver.c
+ * Joule Juggler V2: Joule_Driver.c
  *
- *  Latest Revision on: Feb 16, 2025
+ *  Latest Revision on: Mar 9, 2025
  *      Author: Yolie Reyes
  */
 
@@ -12,26 +12,28 @@
 #include "PLL.h"
 #include "tm4c123gh6pm.h"
 
-
 // The Layout of Ports on the Tiva TM4C123G
 //             b31 ... b6 || b5  b4  b3  b2  b1  b0
 //              RESERVED  || F   E   D   C   B   A
 //                  0x...    20  10  08  04  02  01
-//                           Charging        LCD
-//                                   Discharging
+//                               ADCs
+//                                       Cycling
+//                                           LCD
 
 // The Layout of Pins for a GPIO Port  -----------
 //         b7  b6  b5  b4 ||  b3  b2  b1  b0     |
 // Pin      7   6   5   4 ||   3   2   1   0     |
 //                   0000 || 0000                |
-//                                               |
-//                                               |
-// Control:               ||                     |
 //                        ||                     |
 //                        ||                     |
-//  LCD    D7  D6  D5  D4 ||                     |
-//                        ||       En  R/W  RS   |
+// Control:               ||ADC0  ADC1 ADC0      |
+//                        ||AIN0  AIN1 AIN2      |
+//  ADCs                  ||Volt  Amp  Temp      |
+//  Cycling        -   +  ||                     |
+//  LCD    D7  D6  D5  D4 ||       En  R/W  RS   |
 //                        ||                     |
+//                        ||                     |
+
 
 // The layout of the 16x2 LCD addresses
 //
@@ -43,64 +45,28 @@
 /*
  * ADC Values and Functions
  */
+void ADC_Init(void){ // Initialization of ADC0: AIN0, AIN2 ADC1: AIN1
 
-/*
- * Charging Control Values and Functions
- */
-void GPIOF_Handler(){
-
-    GPIO_PORTF_ICR_R |= 0x11;          /* Clear any prior interrupt*/
 }
-void charging_Init(void){ volatile unsigned long delay;
-    SYSCTL_RCGCGPIO_R |= PF;            /* 1000 0000, enable clock to GPIO F*/
 
-    GPIO_PORTF_LOCK_R = 0x4C4F434B;     /* ASCII representation of the word "LOCK" (0x4C = 'L', 0x4F = 'O', 0x43 = 'C', 0x4B = 'K'*/
-    GPIO_PORTF_CR_R = 0x01;             /* Allows changes to the configuration of pin F0*/
-    GPIO_PORTF_LOCK_R = 0;              /* Relocks GPIO Port F */
+void current(){     // Take a reading of the R_senseC resistor
 
-    GPIO_PORTF_DIR_R &= ~0x11;          /* F0 (Goal 1) & F4 (Goal 2) for inputs for Displacement Sensor, 0001 0001 ==> clear pins and set P4/0 as inputs*/
-    GPIO_PORTF_DEN_R |= 0x11;           /* Make pins 4 & 0 digital pins*/
-    GPIO_PORTF_PUR_R |= ~0x11;           /* Enable pull up resistor for Pins 4, 0 */
+}
 
-    GPIO_PORTF_IS_R &= ~0x11;           /* Make bit 4,0 edge sensitive*/
-    GPIO_PORTF_IBE_R &= ~0x11;          /* Trigger is controlled by IEV*/
-    GPIO_PORTF_IEV_R &= ~0x11;          /* Falling edge trigger*/
-    GPIO_PORTF_ICR_R |= 0x11;           /* Clear any prior interrupt*/
-    GPIO_PORTF_IM_R |= 0x11;            /* Unmask interrupt*/
+void temperature(){ // Take a reading of the thermistor
 
-    NVIC_PRI7_R = (NVIC_PRI7_R & 0xFF00FFFF) | (7<<21);         /* Set interrupt priority to 5 lower priority than timer0A handler!*/
-    NVIC_EN0_R |= 0x40000000;           /* Enable IRQ30 (D30 of ISER[0])*/
+}
 
-    //__enable_irq();                             /* Global enable of IRQs*/
+void voltage(){     // Take a reading of the R_vref resistor
+
+}
+
+double ADC_Conversion(double analogValue){      // Conversion for outputting user friendly units
+
 }
 
 /*
- * Delays
- */
-void delayMs(int n)
-{
-    volatile int i,j;             //volatile is important for variables incremented in code
-    for(i=0;i<n;i++)
-        for(j=0;j<3180;j++)         //delay for 1 msec
-        {}
-}
-
-void delayUs(int n)
-{
-    volatile int i,j;                           //volatile is important for variables incremented in code
-    for(i=0;i<n;i++)
-        for(j=0;j<3;j++)            //delay for 1 micro second
-        {}
-}
-
-/*
- * Discharging Control Values and Functions
- *
- */
-
-
-/*
- * LCD functions and initialization
+ * Joule Juggler LCD Control Values Functions
  */
 void LCD4bits_Init(void)
 {
@@ -472,7 +438,7 @@ char* LCDintConversion(int integer){    // Returns 0 - 100 in ASCII, default "Er
 
 // See Page 722 in the TM4C123 Manual
 /*
- * Timer handler function and initialization
+ *  Joule Timer Values and Functions
  */
 void Timer0A_Init() {
 
