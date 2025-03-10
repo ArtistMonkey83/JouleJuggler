@@ -18,7 +18,7 @@
 //              RESERVED  || F   E   D   C   B   A
 //                  0x...    20  10  08  04  02  01
 //                           Charging        LCD
-//                                  Discharging
+//                                   Discharging
 
 // The Layout of Pins for a GPIO Port  -----------
 //         b7  b6  b5  b4 ||  b3  b2  b1  b0     |
@@ -105,7 +105,7 @@ void delayUs(int n)
 void LCD4bits_Init(void)
 {
     SYSCTL_RCGCGPIO_R |= 0x02;   // Enable the clock for Port B
-    delayMs(10);                 // delay 10 ms for enable the clock of PORTB
+    delayMs(50);                 // delay 50 ms for enable the clock of PORTB
     GPIO_PORTB_DIR_R = 0xFF;     // Set all pins on Port B for output
     GPIO_PORTB_DEN_R = 0xFF;     // Set all pins as digital
     LCD4bits_Cmd(0x28);          // 2 lines and 5x7 character (4-bit data, D4 to D7)
@@ -206,8 +206,8 @@ void LCDbattHealth(int p1, int p2){
 
     char* str3 = LCDintConversion(p1);      // p1 is used to determine the % of charge battery is currently at
     char* str5 = LCDintConversion(p2);      // p2 is used to determine the # of charging/discharging current experiment is at
-    double c20 = 2.76 * 0.2                 // c20 is the threshold to trigger battery charging
-    double c10 = 2.76 - (2.76 * 0.1)        // c10 is the threshold to trigger battery discharging
+    double c20 = 2.76 * 0.2;                 // c20 is the threshold to trigger battery charging
+    double c10 = 2.76 - (2.76 * 0.1);        // c10 is the threshold to trigger battery discharging
 
         LCD4bits_Cmd(0x01);     // Clear the display
         delayMs(500);           // Delay 500 ms to let the LCD diplays the data
@@ -244,7 +244,7 @@ void LCDbattHealth(int p1, int p2){
         }
         if(p1 < c10){                 // This line is execute if we are in the battery charge state
             char* gain = "Gaining Joules ";
-            char* gainr2 = "  Some by some!";
+            char* gain2 = "  Some by some!";
             toggle = 0;                // Toggle is used to determine the state of the system 0 = gain
 
             LCD4bits_Cmd(0x01);        // Clear the display
@@ -422,7 +422,7 @@ char* LCDintConversion(int integer){    // Returns 0 - 100 in ASCII, default "Er
             return "78";
         case 79:
             return "79";
-        case 80;
+        case 80:
             return "80";
         case 81:
             return "81";
@@ -497,84 +497,44 @@ void Timer0A_Init() {
 void Timer0A_Handler() {
     timer0ACounter++;
 
-    //Turn 1 player 1
-    if(timer0ACounter == TV){ // After 2.5 minutes flash a warning, it will be the next player's turn soon!
-        LCDwarning(1);          // Warning for player 1
-        //Speakerplayer1();
-        LEDplayer1();           // 2.5 min
-        currentplayer = 1;      // Currently player 1's turn
+    //Check the voltage on charge pin
+    if(timer0ACounter == TV*1){
+//        SysTick_Wait50ms(3);        // Short Delay 0.5 seconds
+        delayMs(500);
+        LCDbattHealth(3,4);
     }
 
-    if(timer0ACounter == TV*2){ // After 5 minutes flash player 2 lights its their turn!
-        LCDnextPlayer(2,1);       // Notification that it is player 2's turn!
-        //Speakerplayer2();
-        LEDplayer2();           // 5 min
-        currentplayer = 2;      // Currently player 2's turn
+    if(timer0ACounter == TV*2){
+//        SysTick_Wait50ms(3);        // Short Delay 0.5 seconds
+        delayMs(500);
+        LCDoff();
+
     }
 
-    //Turn 1 player 2
-    if( timer0ACounter == TV*3){ // After 2.5 minutes flash a warning, it will be the next player's turn soon!
-        LCDwarning(2);           // Warning for player 2
-        //Speakerplayer2();
-        LEDplayer2();            // 7.5 min
+    //
+    if( timer0ACounter == TV*3){
+//        SysTick_Wait50ms(2);        // Short Delay VALUES = {1,20,100,80
+        delayMs(500);
+        LCDon();
     }
-    if(timer0ACounter == TV*4){ // After 5 minutes flash player 1 lights its their turn!
-        LCDnextPlayer(1,2);        // Notification that it is player 1's turn!
-        //Speakerplayer1();
-        LEDplayer1();            // 10 min
-        currentplayer = 1;      // Currently player 1's turn
-    }
-
-    //Turn 2 player 1
-    if(timer0ACounter == TV*5){ // After 2.5 minutes flash a warning, it will be the next player's turn soon!
-        LCDwarning(1);           // Warning for player 1
-        //Speakerplayer1();
-        LEDplayer1();            // 12.5 min
-    }
-    if(timer0ACounter == TV*6){ // After 5 minutes flash player 2 lights its their turn!
-        LCDnextPlayer(2,2);         // Notification that it is player 2's turn!
-        //Speakerplayer2();
-        LEDplayer2();            // 15 min
-        currentplayer = 2;      // Currently player 2's turn
+    if(timer0ACounter == TV*4){
+//        SysTick_Wait50ms(3);        // Short Delay 0.5 seconds
+        delayMs(500);
+        LCDbattHealth(3,4);
     }
 
-    //Turn 2 player 2
-    if( timer0ACounter == TV*7){ // After 2.5 minutes flash a warning, it will be the next player's turn soon!
-        LCDwarning(0);             // Warning for player 2
-        //Speakerplayer2();
-        LEDplayer2();              // 17.5 min
-    }
-    if(timer0ACounter == TV*8){  // After 5 minutes flash player 1 lights its their turn!
-        LCDnextPlayer(1,3);        // Notification that it is player 1's turn!
-        //Speakerplayer1();
-        LEDplayer1();              // 20 min
-        currentplayer = 1;      // Currently player 1's turn
+    //
+    if(timer0ACounter == TV*5){
+//        SysTick_Wait50ms(3);        // Short Delay 0.5 seconds
+        delayMs(500);
+        LCDoff();
     }
 
-    //Turn 3 player 1
-    if(timer0ACounter == TV*9){   // After 2.5 minutes flash a warning, it will be the next player's turn soon!
-        LCDwarning(1);              // Warning for player 1
-        //Speakerplayer1();
-        LEDplayer1();               // 22.5 min
-    }
-    if(timer0ACounter == TV*10){   // After 5 minutes flash player 2 lights its their turn!
-        LCDnextPlayer(2,3);           // Notification that it is player 2's turn!
-        //Speakerplayer2();
-        LEDplayer2();               // 25 min
-        currentplayer = 2;      // Currently player 2's turn
-    }
-
-    //Turn 3 player 2
-    if( timer0ACounter == TV*11){ // After 2.5 minutes flash a warning, it will be the end of the game soon!
-        LCDwarning(0);             // Warning for player 2
-        //Speakerplayer2();
-        LEDplayer2();              // 27.5 min
-    }
-    if(timer0ACounter == TV*12){  // After 5 minutes flash end of game lights
-        LCDend(player1Goal,player2Goal);                  // Display the end of game messages and execute Shutdown Protocols
-        //SpeakerOff();
-        LEDoff();                  // 30 min The End!!
-        currentplayer = 3;          // There is no third player, this signifies the end of the game!
+    //
+    if(timer0ACounter == TV*6){
+//        SysTick_Wait50ms(2);        // Short Delay VALUES = {1,20,100,80
+        delayMs(500);
+        LCDon();
     }
 
     TIMER0_ICR_R = 0x00000001;     // Clear the Timer0 interrupt flag, acknowledge Timer0A timeout

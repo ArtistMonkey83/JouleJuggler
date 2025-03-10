@@ -17,7 +17,7 @@
 //              RESERVED  || F   E   D   C   B   A
 //                  0x...    20  10  08  04  02  01
 //                           Charging        LCD
-//                                  Discharging
+//                                   Discharging
 
 // The Layout of Pins for a GPIO Port  -----------
 //         b7  b6  b5  b4 ||  b3  b2  b1  b0     |
@@ -58,7 +58,7 @@
 /*
  * Charging Control Values and Functions
  */
-int toggle = 3;           // Toggle is initialized to 3 for system setup purposes, 0 = "gain" 1 = "drain"
+int toggle;           // Toggle is initialized to 3 for system setup purposes, 0 = "gain" 1 = "drain"
 void charging_Init(void); // Trigger Interrupt Control
 void GPIOF_Handler();     // Handler for the charging interrupts coming in on Port F pin 4 and 0
 
@@ -95,6 +95,9 @@ void delayMs(int);                                   // Delay in Milli Seconds
 /*
  * Joule Timer Values and Functions
  */
+#define TV  8   // Time Value short for demo purposes == 19 ~30 seconds
+#define TV2 8   // Time Value long for operational purposes
+
 int timer0ACounter;    // Variable to hold the current time for triggering timed transistions
 
 void Timer0A_Init();    // Initialization for Timer0A ISR
