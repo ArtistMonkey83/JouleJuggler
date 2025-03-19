@@ -59,23 +59,38 @@ void ADC_Init(void){ // Initialization of ADC0: AIN0, AIN2 ADC1: AIN1
     GPIO_PORTC_DEN_R &= 0xff;       // Enable digital for Port C these turn on the BJTs/MOSFETs for gaining or draining electrons
     GPIO_PORTC_AFSEL_R = 0x00;      // Disable alternate functions we are are using digital to turn on the BJTs/MOSFETs
     GPIO_PORTC_DIR_R = 0xff;        // Make Port C pins output, to turn on the switch for gaining or draining
-    //GPIO_PORTC_DATA_R = 0x30;       // The data for PC4 and PC5 should be set to 1 so we can turn on our switches
+    GPIO_PORTC_DATA_R = 0x30;       // The data for PC4 and PC5 should be set to 1 so we can turn on our switches
 
 
     ADC0_ACTSS_R &= ~1;             // Disabled SS0 by clearing ASEN0 bit in ADCACTSS
-    //ADC1_ACTSS_R &= ~1;             // Disabled SS0 by clearing ASEN0 bit in ADCACTSS
+    ADC1_ACTSS_R &= ~1;             // Disabled SS0 by clearing ASEN0 bit in ADCACTSS
+
     ADC0_EMUX_R &= ~0xF;            // Configure trigger event for the SS0, with bit field 3:0, in ADCEMUX
-    //ADC1_EMUX_R &= ~0xF;            // Configure trigger event for the SS0, with bit field 3:0, in ADCEMUX
-    ADC0_SSMUX0_R = 0;             // For each sample in the SS0,  PE3: Voltage == 0x8 'AIN0', PE1: Temp == 0x2 'AIN2', configure the input source in ADCSSMUXx
-    //ADC1_SSMUX0_R = 1;             // For each sample in the SS0,  PE2: Current == 0x4 'AIN1', configure the input source in ADCSSMUXx
-    ADC0_SSCTL0_R |=         // For each sample in SS0 configure the sample control bits in ADCSSCTLx the last nibble end bit needs to be set!
+    ADC1_EMUX_R &= ~0xF;            // Configure trigger event for the SS0, with bit field 3:0, in ADCEMUX
 
-            ADC0_SSMUX0_R = 0;             // For each sample in the SS0,  PE3: Voltage == 0x8 'AIN0', PE1: Temp == 0x2 'AIN2', configure the input source in ADCSSMUXx
-                //ADC1_SSMUX0_R = 1;             // For each sample in the SS0,  PE2: Current == 0x4 'AIN1', configure the input source in ADCSSMUXx
-                ADC0_SSCTL0_R |=
+    ADC0_SSMUX0_R  = 0x0;           // For each sample in the SS0,  PE3: Voltage == 0x8 'AIN0', PE1: Temp == 0x2 'AIN2', configure the input source in ADCSSMUXx
+    ADC0_SSMUX0_R |= (0x2<<4);      // Voltage: AIN0 == 0x0, Current: AIN1 == 0x1, Temp: AIN2 == 0x2
+    ADC0_SSMUX0_R |= (0x0<<8);      // We want to take several readings of Voltage and Temp then average the readings to determine what the value is....
+    ADC0_SSMUX0_R |= (0x2<<12);     // This sequencer can take 8 samples so 4 samples for each voltage and Temp will be acquired
+    ADC0_SSMUX0_R |= (0x0<<16);     // Voltage: 0x0 == AIN0 with four samples on 1st, 3rd, 5th, and 7th sample input select
+    ADC0_SSMUX0_R |= (0x2<<20);     // Temp: 0x2 == AIN2 with four samples on 2nd, 4th, 6th, and 8th sample input select
+    ADC0_SSMUX0_R |= (0x0<<24);     // Shifting the value to the LSB of each of sample sequencer 0's 8 multiplexers
+    ADC0_SSMUX0_R |= (0x2<<28);
 
-        // Using interrupts requires the corresponding MASK bit in the ADCIM to be set
-        // Enable the sample sequencer by setting the corresponding ASENx bit in the ADCACTSS
+    ADC1_SSMUX0_R = 0x1;             // For each sample in the SS0, PE2: Current == 0x4 'AIN1', configure the input source in ADCSSMUXx
+    ADC1_SSMUX0_R = (0x1<<4);        // We want to take several readings of the Current to then average the readings to determine what the value is....
+    ADC1_SSMUX0_R = (0x1<<8);        // Shifting the value to the LSB of four of the sample sequencer 0's 8 multiplexers
+    ADC1_SSMUX0_R = (0x1<<12);       // Current: AIN1 == 0x1
+
+    ADC0_SSCTL0_R |= 0x64444444;     // For each sample in SS0 configure the sample control bits in ADCSSCTLx the last nibble end bit needs to be set!
+    ADC1_SSCTL0_R |= 0x6444;         // For each sample in SS0 configure the sample control bits in ADCSSCTLx the last nibble end bit needs to be set!
+
+    ADC0_IM_R = 1;    // Using interrupts requires the corresponding MASK bit in the ADCIM to be set
+    ADC1_IM_R = 1;    // Using interrupts requires the corresponding MASK bit in the ADCIM to be set
+
+    ADC0_ACTSS_R &= 1;             // Enabled SS0 by setting ASEN0 bit in ADCACTSS
+    ADC1_ACTSS_R &= 1;             // Enabled SS0 by setting ASEN0 bit in ADCACTSS
+
 }
 
 void current(){     // Take a reading of the R_senseC resistor

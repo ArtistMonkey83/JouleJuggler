@@ -61,11 +61,11 @@
 #define DrainingRest 1  // Rest after draining to reach equilibrium
 #define GainingRest 1   // Rest after gaining to reach equilibrium
 #define Rest 1          // General rest to be used during cycling if needed
-
 double I_batt;      // Variable for R_senseC
 double V_batt;      // Variable for R_vref
 double Batt_temp;   // Variable for thermistor
 int shutdown;       // Flag in case of an emergency shut it down!
+int toggle = 3;         // Used to flag what state the Joule Juggler is in, i.e. Gaining or Draining
 
 void ADC_Init(void);// Initialization of ADC0: AIN0, AIN2 ADC1: AIN1
 void current();     // Take a reading of the R_senseC resistor
