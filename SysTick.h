@@ -1,7 +1,7 @@
 /*
- * Joule Juggler V1: SysTick.h
+ * Joule Juggler V2: SysTick.h
  *
- * Latest Revision on: Feb 16, 2025
+ * Latest Revision on: Mar 19, 2025
  *      Author: Yolie Reyes
  */
 

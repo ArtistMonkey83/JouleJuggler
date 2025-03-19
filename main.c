@@ -1,7 +1,7 @@
 /*
  * Joule Juggler V2: main.c
  *
- *  Latest Revision on: Mar 9, 2025
+ *  Latest Revision on: Mar 19, 2025
  *              Author: Yolie Reyes
  */
 
@@ -32,6 +32,14 @@
 //  LCD    D7  D6  D5  D4 ||       En  R/W  RS   |
 //                        ||                     |
 //                        ||                     |
+
+
+// The layout of the 16x2 LCD addresses
+//
+//       1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16
+//
+// 0x... 80  81  82  83  84  85  86  87  88 89  8A  8B  8C  8D  8E  8F  LINE 1
+// 0x... C0  C1  C2  C3  C4  C5  C6  C7  C8 C9  CA  CB  CC  CD  CE  CF  LINE 2
 
 
 /**

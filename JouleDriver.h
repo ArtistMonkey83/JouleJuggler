@@ -1,7 +1,7 @@
 /*
  * Joule Juggler V2: Joule_Driver.h
  *
- *  Latest Revision on: Mar 9, 2025
+ *  Latest Revision on: Mar 19, 2025
  *      Author: Yolie Reyes
  */
 
@@ -50,6 +50,7 @@
 #define PB 0x02     //HW Serial: Pin0 Rx[1], Pin1 Tx[1] I2C: Pin2 SCL[0], Pin3 SDA[0] SPI: Pin4 SCK[2], Pin5 CS[2], Pin6 MISO[2], Pin7 MOSI[2]
 #define PC 0x04     //HW Serial: Pin4 Rx[1], Pin5 Tx[1] Pin6 Rx[3], Pin7 Tx[3]
 #define PD 0x08     //I2C: Pin0 SCL[3], Pin1 SDA[3] SPI: Pin0 SCK[3], Pin1 CS[3], Pin2 MISO[3], Pin3 MOSI[3] HW Serial: Pin6 Rx[2], Pin7 Tx[2]
+#define PE 0x10     // ADCs
 #define PF 0x20     //SPI: Pin0 MISO[1], Pin1 MOSI[1], Pin2 SCK[1], Pin3 CS[1]
 
 /*
@@ -57,6 +58,9 @@
  */
 #define Draining 32 // 0x20, PC5
 #define Gaining 16  // 0x10, PC4
+#define DrainingRest 1  // Rest after draining to reach equilibrium
+#define GainingRest 1   // Rest after gaining to reach equilibrium
+#define Rest 1          // General rest to be used during cycling if needed
 
 double I_batt;      // Variable for R_senseC
 double V_batt;      // Variable for R_vref

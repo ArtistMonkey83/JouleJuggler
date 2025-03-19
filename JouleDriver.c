@@ -1,7 +1,7 @@
 /*
  * Joule Juggler V2: Joule_Driver.c
  *
- *  Latest Revision on: Mar 9, 2025
+ *  Latest Revision on: Mar 19, 2025
  *      Author: Yolie Reyes
  */
 
@@ -46,7 +46,36 @@
  * ADC Values and Functions
  */
 void ADC_Init(void){ // Initialization of ADC0: AIN0, AIN2 ADC1: AIN1
+    SYSCTL_RCGCGPIO_R |= PE;        // Enable Port E clock SYSCTL_RCGCGPIO_R for using PE3: Voltage, PE2: Current, PE1: Temp
+    SYSCTL_RCGCADC_R  |= 3;         // Enable the ADC Clocks using RCGCADC b0 == 1:Volt/Temp, b1 == 1: Current 2+1=3
 
+    //GPIO_PORTE_DIR_R = 0x00;        // Enable the direction of the pins PE3,PE2, & PE1 as input, == 0
+    GPIO_PORTE_AFSEL_R |= 14;       // Enable alternative function GPIO_PORTE_AFSEL_R for 3 pins, 8+2+4 = 14
+    GPIO_PORTE_DEN_R &= ~14;        // Disable digital function GPIO_PORTE_DEN_R, configures AINx signals to be analog by clearing
+    GPIO_PORTE_AMSEL_R |= 14;       // Disable the analog isolation circuit for all ADC input pins, GPIO_PORTE_AMSEL_R  == 1 enables analog function
+        // Optional: Reconfigure the sample sequencer priorities in ADCSSPRI SS0 highest SS3 lowest as default!
+
+    SYSCTL_RCGCGPIO_R |= PC;        // Enable Port C clock SYSCTL_RCGCGPIO_R for using PC4: Gaining Select = 0x10 PC5: Draining Select = 0x20
+    GPIO_PORTC_DEN_R &= 0xff;       // Enable digital for Port C these turn on the BJTs/MOSFETs for gaining or draining electrons
+    GPIO_PORTC_AFSEL_R = 0x00;      // Disable alternate functions we are are using digital to turn on the BJTs/MOSFETs
+    GPIO_PORTC_DIR_R = 0xff;        // Make Port C pins output, to turn on the switch for gaining or draining
+    //GPIO_PORTC_DATA_R = 0x30;       // The data for PC4 and PC5 should be set to 1 so we can turn on our switches
+
+
+    ADC0_ACTSS_R &= ~1;             // Disabled SS0 by clearing ASEN0 bit in ADCACTSS
+    //ADC1_ACTSS_R &= ~1;             // Disabled SS0 by clearing ASEN0 bit in ADCACTSS
+    ADC0_EMUX_R &= ~0xF;            // Configure trigger event for the SS0, with bit field 3:0, in ADCEMUX
+    //ADC1_EMUX_R &= ~0xF;            // Configure trigger event for the SS0, with bit field 3:0, in ADCEMUX
+    ADC0_SSMUX0_R = 0;             // For each sample in the SS0,  PE3: Voltage == 0x8 'AIN0', PE1: Temp == 0x2 'AIN2', configure the input source in ADCSSMUXx
+    //ADC1_SSMUX0_R = 1;             // For each sample in the SS0,  PE2: Current == 0x4 'AIN1', configure the input source in ADCSSMUXx
+    ADC0_SSCTL0_R |=         // For each sample in SS0 configure the sample control bits in ADCSSCTLx the last nibble end bit needs to be set!
+
+            ADC0_SSMUX0_R = 0;             // For each sample in the SS0,  PE3: Voltage == 0x8 'AIN0', PE1: Temp == 0x2 'AIN2', configure the input source in ADCSSMUXx
+                //ADC1_SSMUX0_R = 1;             // For each sample in the SS0,  PE2: Current == 0x4 'AIN1', configure the input source in ADCSSMUXx
+                ADC0_SSCTL0_R |=
+
+        // Using interrupts requires the corresponding MASK bit in the ADCIM to be set
+        // Enable the sample sequencer by setting the corresponding ASENx bit in the ADCACTSS
 }
 
 void current(){     // Take a reading of the R_senseC resistor
